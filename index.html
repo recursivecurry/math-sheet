@@ -1,0 +1,191 @@
+<!DOCTYPE html>
+<html lang="ko">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>곱셈 연습지 A4</title>
+  <style>
+    /* --- Page & print setup --- */
+    @page { size: A4; margin: 12mm; }
+    html, body { height: 100%; }
+    body {
+      font-family: system-ui, -apple-system, Segoe UI, Roboto, Noto Sans KR, Helvetica, Arial, "Apple SD Gothic Neo", "Malgun Gothic", sans-serif;
+      color: #111;
+      margin: 0;
+      -webkit-print-color-adjust: exact;
+      print-color-adjust: exact;
+    }
+
+    .sheet {
+      display: grid;
+      grid-template-rows: auto 1fr;
+      gap: 8mm;
+      height: 100%;
+      box-sizing: border-box;
+    }
+
+    /* Header */
+    .header {
+      display: grid;
+      grid-template-columns: 1fr auto;
+      align-items: center;
+    }
+    .date {
+      font-size: 16px;
+      font-weight: 600;
+    }
+    .controls { display: flex; align-items: center; gap: 8px; }
+    .controls label { user-select: none; font-size: 14px; }
+    .btn {
+      border: 1px solid #333;
+      background: #f7f7f7;
+      padding: 6px 10px;
+      border-radius: 6px;
+      cursor: pointer;
+      font-size: 14px;
+    }
+    .btn:active { transform: translateY(1px); }
+
+    /* Grid for 10 x 4 problems */
+    .grid {
+      display: grid;
+      grid-template-columns: repeat(4, 1fr);
+      grid-template-rows: repeat(10, 1fr);
+      gap: 6mm 8mm; /* row-gap col-gap */
+    }
+
+    .item {
+      display: grid;
+      grid-template-columns: auto auto auto 1fr;
+      grid-auto-flow: column;
+      align-items: center;
+      column-gap: 6px;
+      font-size: 16px; /* comfortable for A4 */
+      min-height: 18mm; /* ensure adequate handwriting room */
+    }
+    .expr { white-space: nowrap; }
+
+    .eq { margin: 0 4px; }
+
+    .answer-box {
+      justify-self: end;
+      min-width: 30mm;
+      min-height: 10mm;
+      border: 1.5px solid #000;
+      border-radius: 4px;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      padding: 2mm 3mm;
+      box-sizing: border-box;
+      font-weight: 700;
+      letter-spacing: 0.5px;
+    }
+
+    /* Hide answers by default; reveal when .show-answers on <body> */
+    .answer-box[data-answer]::after { content: attr(data-answer); opacity: 0; }
+    body.show-answers .answer-box[data-answer]::after { opacity: 1; }
+
+    /* Print tweaks */
+    @media print {
+      .btn { display: none !important; }
+      .controls input[type="checkbox"] { display: none !important; }
+      .controls label { display: none !important; }
+    }
+  </style>
+</head>
+<body>
+  <div class="sheet">
+    <header class="header">
+      <div class="date" id="today"></div>
+      <div class="controls">
+        <input type="checkbox" id="toggleAns" />
+        <label for="toggleAns">정답 보기</label>
+        <button class="btn" id="printBtn" type="button">프린트</button>
+      </div>
+    </header>
+
+    <main class="grid" id="problems"></main>
+  </div>
+
+  <script>
+    // --- Utilities ---
+    function pad2(n){ return n.toString().padStart(2, '0'); }
+    function formatDateYMDKorean(d){
+      const y = d.getFullYear();
+      const m = pad2(d.getMonth() + 1);
+      const day = pad2(d.getDate());
+      return `${y}년 ${m}월 ${day}일`;
+    }
+
+    function randInt(min, max) { // inclusive
+      return Math.floor(Math.random() * (max - min + 1)) + min;
+    }
+
+    function makeProblemRow(a, b){
+      const wrap = document.createElement('div');
+      wrap.className = 'item';
+
+      const expr = document.createElement('div');
+      expr.className = 'expr';
+      expr.textContent = `${a} × ${b}`;
+
+      const eq = document.createElement('div');
+      eq.className = 'eq';
+      eq.textContent = '=';
+
+      const answer = document.createElement('div');
+      answer.className = 'answer-box';
+      answer.setAttribute('data-answer', (a*b).toString());
+
+      // layout: [expr][=][box] plus filler for equal spacing
+      wrap.appendChild(expr);
+      wrap.appendChild(eq);
+      wrap.appendChild(answer);
+      // filler
+      const filler = document.createElement('div');
+      filler.style.minWidth = '1px';
+      wrap.appendChild(filler);
+
+      return wrap;
+    }
+
+    function generateProblems(){
+      const container = document.getElementById('problems');
+      container.innerHTML = '';
+
+      // First 20: 2-digit x 1-digit (10-99) × (2-9)
+      for(let i=0;i<20;i++){
+        const a = randInt(10,99);
+        const b = randInt(2,9);
+        container.appendChild(makeProblemRow(a,b));
+      }
+      // Next 20: 2-digit x 2-digit (10-99) × (10-99)
+      for(let i=0;i<20;i++){
+        const a = randInt(10,99);
+        const b = randInt(10,99);
+        container.appendChild(makeProblemRow(a,b));
+      }
+    }
+
+    // --- Init ---
+    document.addEventListener('DOMContentLoaded', () => {
+      // Date (top-left)
+      const now = new Date();
+      document.getElementById('today').textContent = formatDateYMDKorean(now);
+
+      // Problems
+      generateProblems();
+
+      // Toggle answers
+      const chk = document.getElementById('toggleAns');
+      chk.addEventListener('change', (e) => {
+        document.body.classList.toggle('show-answers', e.target.checked);
+      });
+
+      // Print
+      document.getElementById('printBtn').addEventListener('click', () => window.print());
+    });
+  </script>
+</body>
+</html>
