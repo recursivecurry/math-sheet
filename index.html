@@ -12,6 +12,7 @@
       font-family: system-ui, -apple-system, Segoe UI, Roboto, Noto Sans KR, Helvetica, Arial, "Apple SD Gothic Neo", "Malgun Gothic", sans-serif;
       color: #111;
       margin: 0;
+      font-size: 150%;
       -webkit-print-color-adjust: exact;
       print-color-adjust: exact;
     }
@@ -49,19 +50,18 @@
     /* Grid for 10 x 4 problems */
     .grid {
       display: grid;
-      grid-template-columns: repeat(4, 1fr);
+      grid-template-columns: repeat(5, 1fr);
       grid-template-rows: repeat(10, 1fr);
-      gap: 6mm 8mm; /* row-gap col-gap */
+      gap: 5mm 6mm; /* row-gap col-gap */
     }
 
     .item {
       display: grid;
-      grid-template-columns: auto auto auto 1fr;
-      grid-auto-flow: column;
+      grid-template-columns: auto auto 1fr;
       align-items: center;
-      column-gap: 6px;
-      font-size: 16px; /* comfortable for A4 */
-      min-height: 18mm; /* ensure adequate handwriting room */
+      column-gap: 4px;
+      font-size: 1em;
+      min-height: 18mm;
     }
     .expr { white-space: nowrap; }
 
@@ -69,7 +69,7 @@
 
     .answer-box {
       justify-self: end;
-      min-width: 30mm;
+      min-width: 22mm;
       min-height: 10mm;
       border: 1.5px solid #000;
       border-radius: 4px;
@@ -122,13 +122,35 @@
       return Math.floor(Math.random() * (max - min + 1)) + min;
     }
 
-    function makeProblemRow(a, b){
+    function makeProblemRow(a, b, op, index){
       const wrap = document.createElement('div');
       wrap.className = 'item';
 
+      const num = document.createElement('div');
+      num.className = 'num';
+      num.textContent = index + '.';
+
       const expr = document.createElement('div');
       expr.className = 'expr';
-      expr.textContent = `${a} × ${b}`;
+      const sym = op === '+' ? '+' : '×';
+      expr.textContent = `${a} ${sym} ${b}`;
+
+      const eq = document.createElement('div');
+      eq.className = 'eq';
+      eq.textContent = '=';
+
+      const answer = document.createElement('div');
+      answer.className = 'answer-box';
+      const val = op === '+' ? (a + b) : (a * b);
+      answer.setAttribute('data-answer', val.toString());
+
+      wrap.appendChild(num);
+      wrap.appendChild(expr);
+      wrap.appendChild(eq);
+      wrap.appendChild(answer);
+
+      return wrap;
+    } × ${b}`;
 
       const eq = document.createElement('div');
       eq.className = 'eq';
@@ -153,13 +175,58 @@
     function generateProblems(){
       const container = document.getElementById('problems');
       container.innerHTML = '';
+      let index = 1;
 
-      // First 20: 2-digit x 1-digit (10-99) × (2-9)
-      for(let i=0;i<20;i++){
+      // 1) 3행 5열 = 15문제: 3자리 + 3자리
+      for(let i=0;i<15;i++){
+        const a = randInt(100,999);
+        const b = randInt(100,999);
+        container.appendChild(makeProblemRow(a,b,'+', index++));
+      }
+
+      // 2) 3행 5열 = 15문제: 2자리 × 1자리
+      for(let i=0;i<15;i++){
         const a = randInt(10,99);
         const b = randInt(2,9);
-        container.appendChild(makeProblemRow(a,b));
+        container.appendChild(makeProblemRow(a,b,'*', index++));
       }
+
+      // 3) 3행 5열 = 15문제: 2자리 × 2자리
+      for(let i=0;i<15;i++){
+        const a = randInt(10,99);
+        const b = randInt(10,99);
+        container.appendChild(makeProblemRow(a,b,'*', index++));
+      }
+
+      // 4) 1행 5열 = 5문제: 3자리 × 2자리
+      for(let i=0;i<5;i++){
+        const a = randInt(100,999);
+        const b = randInt(10,99);
+        container.appendChild(makeProblemRow(a,b,'*', index++));
+      }
+    }
+
+      // 2) 3행 5열 = 15문제: 2자리 × 1자리
+      for(let i=0;i<15;i++){
+        const a = randInt(10,99);
+        const b = randInt(2,9);
+        container.appendChild(makeProblemRow(a,b,'*'));
+      }
+
+      // 3) 3행 5열 = 15문제: 2자리 × 2자리
+      for(let i=0;i<15;i++){
+        const a = randInt(10,99);
+        const b = randInt(10,99);
+        container.appendChild(makeProblemRow(a,b,'*'));
+      }
+
+      // 4) 1행 5열 = 5문제: 3자리 × 2자리
+      for(let i=0;i<5;i++){
+        const a = randInt(100,999);
+        const b = randInt(10,99);
+        container.appendChild(makeProblemRow(a,b,'*'));
+      }
+    }
       // Next 20: 2-digit x 2-digit (10-99) × (10-99)
       for(let i=0;i<20;i++){
         const a = randInt(10,99);
